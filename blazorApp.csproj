@@ -6,5 +6,7 @@
     <PackageReference Include="Microsoft.Identity.Web" Version="1.*" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.*" />
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="5.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.HttpClient" Version="3.2.0-preview3.20168.3" />
   </ItemGroup>
 </Project>

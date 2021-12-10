@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using blazorApp.Data;
 using Microsoft.Graph;
+using Services;
 
 namespace blazorApp
 {
@@ -29,8 +30,6 @@ namespace blazorApp
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -53,6 +52,12 @@ namespace blazorApp
             services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
             services.AddSingleton<WeatherForecastService>();
+
+            services.AddHttpClient<IResourceService, ResourceService>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:5001/");
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
