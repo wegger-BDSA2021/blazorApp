@@ -1,0 +1,44 @@
+@page "/create-resource"
+@using Models
+@using Services
+
+<h3>Create a new resource with our awesome API</h3>
+<br />
+
+<EditForm Model="@_request" OnValidSubmit="@HandleValidSubmit" class="form-inline">
+
+    <label class="ml-2">Title:</label>
+   <InputText id="Title" @bind-Value="_request.Title" class="form-control" />
+
+    <label class="ml-2">Description:</label>
+   <InputText id="Description" @bind-Value="_request.Description" class="form-control" />
+
+    <label class="ml-2">Url:</label>
+   <InputText id="Url" @bind-Value="_request.Url" class="form-control" />
+
+   <label class="ml-2">UserId:</label>
+   <InputText id="UserId" @bind-Value="_request.UserId" class="form-control" />
+ 
+   <label class="ml-2">Year:</label>
+   <InputNumber id="InitialRating" @bind-Value="_request.InitialRating" class="form-control" />
+ 
+   <button class="btn btn-primary ml-2" type="submit">Submit</button>
+
+</EditForm>
+
+@code {
+    
+    private ResourceRequestModel _request = new ResourceRequestModel();
+    private ResourceResponseModel _response = new ResourceResponseModel();
+
+    [Inject]
+    private IResourceService _service { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        _response = await _service.CreateResource(_request);
+    }
+}
+
+}
+
