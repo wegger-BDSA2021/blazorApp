@@ -18,6 +18,7 @@ using Microsoft.Extensions.Hosting;
 using blazorApp.Data;
 using Microsoft.Graph;
 using Services;
+using System.Net.Http;
 
 namespace blazorApp
 {
@@ -55,9 +56,14 @@ namespace blazorApp
 
             services.AddHttpClient<IResourceService, ResourceService>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:5001/");
+                client.BaseAddress = new Uri("http://localhost:5000/");
+            }).ConfigureHttpMessageHandlerBuilder(builder =>
+            {
+                builder.PrimaryHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (m, c, ch, e) => true
+                };
             });
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
