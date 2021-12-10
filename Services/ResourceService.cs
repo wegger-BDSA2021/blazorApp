@@ -18,5 +18,11 @@ namespace Services
         {
             return await _client.GetJsonAsync<ResourceResponseModel>("api/Resources/Create");
         }
+
+        public async Task CreateUser(string id)
+        {
+            await _client.GetJsonAsync<object>("api/User/Create");
+
+        }
     }
 }

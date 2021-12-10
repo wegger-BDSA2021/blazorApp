@@ -7,7 +7,7 @@
 <h3>Create a new resource with our awesome API</h3>
 <br />
 
-<EditForm Model="@_request" OnValidSubmit="@HandleValidSubmit" class="form-inline" aria-orientation="vertical" aria-colspan="3">
+<EditForm Model="@_request" OnValidSubmit="@HandleValidSubmit" class="form-inline" aria-orientation="horizontal" aria-colspan="3">
 
     <label class="ml-2">Title:</label>
    <InputText id="Title" @bind-Value="_request.Title" class="form-control" />
