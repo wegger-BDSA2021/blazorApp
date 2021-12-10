@@ -1,6 +1,8 @@
 @page "/create-resource"
 @using Models
 @using Services
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 
 <h3>Create a new resource with our awesome API</h3>
 <br />
@@ -16,8 +18,8 @@
     <label class="ml-2">Url:</label>
    <InputText id="Url" @bind-Value="_request.Url" class="form-control" />
 
-   <label class="ml-2">UserId:</label>
-   <InputText id="UserId" @bind-Value="_request.UserId" class="form-control" />
+   @* <label class="ml-2">UserId:</label>
+   <InputText id="UserId" @bind-Value="_request.UserId" class="form-control" /> *@
  
    <label class="ml-2">Initial Rating:</label>
    <InputNumber id="InitialRating" @bind-Value="_request.InitialRating" class="form-control"/>
@@ -34,8 +36,19 @@
     [Inject]
     private IResourceService _service { get; set; }
 
+    [Inject]
+    private AuthenticationStateProvider _authProvider { get; set; }
+
     private async Task HandleValidSubmit()
     {
-        _response = await _service.CreateResource(_request);
+        var claimer = await _authProvider.GetAuthenticationStateAsync();
+        var user = claimer.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _request.UserId = userId;
+            _response = await _service.CreateResource(_request);
+        }
     }
 }
