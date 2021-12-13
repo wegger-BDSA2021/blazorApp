@@ -47,7 +47,16 @@
         if (user.Identity.IsAuthenticated)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            _request.UserId = userId;
+            _request.UserId = userId.Trim();
+            System.Console.WriteLine();
+            System.Console.WriteLine();
+            System.Console.WriteLine(_request.Title);
+            System.Console.WriteLine(_request.Description);
+            System.Console.WriteLine(_request.UserId);
+            System.Console.WriteLine(_request.Url);
+            System.Console.WriteLine(_request.InitialRating);
+            System.Console.WriteLine();
+            System.Console.WriteLine();
             _response = await _service.CreateResource(_request);
         }
     }

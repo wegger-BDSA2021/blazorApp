@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -34,24 +35,49 @@ namespace blazorApp
         public void ConfigureServices(IServiceCollection services)
         {
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            // var customScopes = Configuration.GetValue<string>("WeggerAuth:WeggerScope");
+            // initialScopes.ToList().Add(customScopes);
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+                            // .AddDownstreamWebApi("WeggerApi", Configuration.GetSection("WeggerAuth"))
                         .AddInMemoryTokenCaches();
-            services.AddControllersWithViews()
-                .AddMicrosoftIdentityUI();
+
+            // services.AddMicrosoftWebAppAuthentication(Configuration)
+            //     .AddMicrosoftWebAppCallsWebApi(Configuration, new List<string>()
+            //     {"api://23d9a97d-3387-499c-83bc-0ae84d198403/ReadAccess"})
+            //     .AddInMemoryTokenCaches();
+
+
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+
+            }).AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {
                 // By default, all incoming requests will be authorized according to the default policy
                 options.FallbackPolicy = options.DefaultPolicy;
+                options.AddPolicy("ValidateAccessTokenPolicy", validateAccessTokenPolicy =>
+                    {
+                        // Validate ClientId from token
+                        // only accept tokens issued ....
+                        validateAccessTokenPolicy.RequireClaim("ReadAccess", "23d9a97d-3387-499c-83bc-0ae84d198403");
+                    });
             });
 
             services.AddRazorPages();
+
             services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
+
             services.AddSingleton<WeatherForecastService>();
 
             services.AddHttpClient<IResourceService, ResourceService>(client =>
