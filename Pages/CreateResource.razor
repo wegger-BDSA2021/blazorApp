@@ -3,6 +3,15 @@
 @using Services
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Headers
+@using Microsoft.Identity.Web
+
+@inject Microsoft.Identity.Web.ITokenAcquisition TokenAcquisitionService
+@inject IHttpClientFactory HttpClientFactory
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+
+
 
 <h3>Create a new resource with our awesome API</h3>
 <br />
@@ -28,13 +37,13 @@
 
 </EditForm>
 
+
 @code {
-    
+
+    private HttpClient _httpClient;
+
     private ResourceRequestModel _request = new ResourceRequestModel();
     private ResourceResponseModel _response = new ResourceResponseModel();
-
-    [Inject]
-    private IResourceService _service { get; set; }
 
     [Inject]
     private AuthenticationStateProvider _authProvider { get; set; }
@@ -46,18 +55,25 @@
 
         if (user.Identity.IsAuthenticated)
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            _request.UserId = userId.Trim();
-            System.Console.WriteLine();
-            System.Console.WriteLine();
-            System.Console.WriteLine(_request.Title);
-            System.Console.WriteLine(_request.Description);
-            System.Console.WriteLine(_request.UserId);
-            System.Console.WriteLine(_request.Url);
-            System.Console.WriteLine(_request.InitialRating);
-            System.Console.WriteLine();
-            System.Console.WriteLine();
-            _response = await _service.CreateResource(_request);
+            try
+            { 
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                _request.UserId = userId.Trim(); 
+                _httpClient = HttpClientFactory.CreateClient();
+
+                var token = await TokenAcquisitionService.GetAccessTokenForUserAsync(new string[] {"ReadAccess"});
+                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                _response = await _httpClient.PostJsonAsync<ResourceResponseModel>("api/Resource/Create", _request);
+                System.Console.WriteLine(_response);
+            }
+            catch (Exception ex)
+            {
+                ConsentHandler.HandleException(ex);
+            }
         }
+
     }
+
 }

@@ -31,7 +31,7 @@ namespace Services
             // var response = await _client.PostJsonAsync<ResourceResponseModel>("api/Resource/Create", request);
             // System.Console.WriteLine(response);
             // return response;
-            var response = await _client.GetJsonAsync<ResourceResponseModel>("api/Tag");
+            var response = await _client.GetJsonAsync<ResourceResponseModel>("api/Resource/Create");
             return response;
         }
 

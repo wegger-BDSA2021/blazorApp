@@ -35,20 +35,15 @@ namespace blazorApp
         public void ConfigureServices(IServiceCollection services)
         {
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
-            // var customScopes = Configuration.GetValue<string>("WeggerAuth:WeggerScope");
-            // initialScopes.ToList().Add(customScopes);
+            var customScopes = Configuration.GetValue<string>("WeggerAuth:Scopes")?.Split(' ').First();
+            initialScopes.ToList().Add(customScopes);
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
-                            // .AddDownstreamWebApi("WeggerApi", Configuration.GetSection("WeggerAuth"))
+                        .AddDownstreamWebApi("WeggerApi", Configuration.GetSection("WeggerAuth"))
                         .AddInMemoryTokenCaches();
-
-            // services.AddMicrosoftWebAppAuthentication(Configuration)
-            //     .AddMicrosoftWebAppCallsWebApi(Configuration, new List<string>()
-            //     {"api://23d9a97d-3387-499c-83bc-0ae84d198403/ReadAccess"})
-            //     .AddInMemoryTokenCaches();
 
 
             services.AddControllersWithViews(options =>
@@ -65,12 +60,12 @@ namespace blazorApp
             {
                 // By default, all incoming requests will be authorized according to the default policy
                 options.FallbackPolicy = options.DefaultPolicy;
-                options.AddPolicy("ValidateAccessTokenPolicy", validateAccessTokenPolicy =>
-                    {
-                        // Validate ClientId from token
-                        // only accept tokens issued ....
-                        validateAccessTokenPolicy.RequireClaim("ReadAccess", "23d9a97d-3387-499c-83bc-0ae84d198403");
-                    });
+                // options.AddPolicy("ValidateAccessTokenPolicy", validateAccessTokenPolicy =>
+                //     {
+                //         // Validate ClientId from token
+                //         // only accept tokens issued ....
+                //         validateAccessTokenPolicy.RequireClaim("ReadAccess", "23d9a97d-3387-499c-83bc-0ae84d198403");
+                //     });
             });
 
             services.AddRazorPages();
