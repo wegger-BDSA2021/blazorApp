@@ -1,0 +1,91 @@
+@page "/create-resource"
+@using Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Headers
+@using Microsoft.Identity.Web
+@using System.Text.Json
+
+@inject Microsoft.Identity.Web.ITokenAcquisition TokenAcquisitionService
+@inject IHttpClientFactory HttpClientFactory
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+
+<h3>Check out all our resources</h3>
+<br />
+
+
+<div class="container">
+    <h3 class="p-3 text-center">Resources:</h3>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>URL</th>
+                <th>Average rating</th>
+                <th>Deprecated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var resource in _resources)
+            {
+                <tr>
+                    <td>@resource.title</td>
+                    <td>@resource.description</td>
+                    <td>@resource.url</td>
+                    <td>@resource.averageRating</td>
+                    <td>@resource.deprecated</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@code {
+
+    private HttpClient _httpClient;
+
+    private ResourceRequestModel _request = new ResourceRequestModel();
+    private ResourceResponseModel _response = new ResourceResponseModel();
+
+    private List<Resource> _resources = new List<Resource>();
+
+    [Inject]
+    private AuthenticationStateProvider _authProvider { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var claimer = await _authProvider.GetAuthenticationStateAsync();
+        var user = claimer.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            try
+            { 
+                //var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                //_request.UserId = userId.Trim(); 
+
+                _httpClient = HttpClientFactory.CreateClient("httpClient");
+
+                var token = await TokenAcquisitionService.GetAccessTokenForUserAsync(new string[] {"api://23d9a97d-3387-499c-83bc-0ae84d198403/ReadAccess"});
+                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var result = await _httpClient.GetStringAsync("/api/Resource/ReadAll");
+                // result.EnsureSuccessStatusCode();
+
+                var collection = JsonSerializer.Deserialize<List<Resource>>(result);
+
+                _resources = collection;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                ConsentHandler.HandleException(ex);
+            }
+        }
+
+    }
+
+}

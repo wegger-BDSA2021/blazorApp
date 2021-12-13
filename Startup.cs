@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -15,8 +16,9 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using blazorApp.Data;
 using Microsoft.Graph;
+using Services;
+using System.Net.Http;
 
 namespace blazorApp
 {
@@ -29,33 +31,53 @@ namespace blazorApp
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            var customScopes = Configuration.GetValue<string>("WeggerAuth:Scopes")?.Split(' ').First();
+            initialScopes.ToList().Add(customScopes);
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+                        .AddDownstreamWebApi("Wegger", Configuration.GetSection("WeggerAuth"))
                         .AddInMemoryTokenCaches();
-            services.AddControllersWithViews()
-                .AddMicrosoftIdentityUI();
+
+
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+
+            }).AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {
-                // By default, all incoming requests will be authorized according to the default policy
                 options.FallbackPolicy = options.DefaultPolicy;
             });
 
             services.AddRazorPages();
+
             services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
-            services.AddSingleton<WeatherForecastService>();
+
+
+            services.AddHttpClient("httpClient", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:5001/");
+            }).ConfigureHttpMessageHandlerBuilder(builder =>
+            {
+                builder.PrimaryHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (m, c, ch, e) => true
+                };
+            });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -65,7 +87,6 @@ namespace blazorApp
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
