@@ -49,11 +49,11 @@
             @foreach (var resource in _resources)
             {
                 <tr>
-                    <td>@resource.Title</td>
-                    <td>@resource.Description</td>
-                    <td>@resource.Url</td>
-                    <td>@resource.AverageRating</td>
-                    <td>@resource.Deprecated</td>
+                    <td>@resource.title</td>
+                    <td>@resource.description</td>
+                    <td>@resource.url</td>
+                    <td>@resource.averageRating</td>
+                    <td>@resource.deprecated</td>
                 </tr>
             }
         </tbody>
@@ -68,7 +68,7 @@
     private ResourceRequestModel _request = new ResourceRequestModel();
     private ResourceResponseModel _response = new ResourceResponseModel();
 
-    private List<Resource> _resources;
+    private List<Resource> _resources = new List<Resource>();
 
     [Inject]
     private AuthenticationStateProvider _authProvider { get; set; }
@@ -91,15 +91,13 @@
                 _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var result = await _httpClient.GetAsync("/api/Resource/ReadAll");
-                result.EnsureSuccessStatusCode();
-                System.Console.WriteLine(result.StatusCode);
+                var result = await _httpClient.GetStringAsync("/api/Resource/ReadAll");
+                // result.EnsureSuccessStatusCode();
 
-                var content = await result.Content.ReadAsStringAsync();
-                var collection = JsonSerializer.Deserialize<List<Resource>>(content);
+                var collection = JsonSerializer.Deserialize<List<Resource>>(result);
 
                 _resources = collection;
-
+                StateHasChanged();
             }
             catch (Exception ex)
             {
