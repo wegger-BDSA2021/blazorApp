@@ -60,12 +60,6 @@ namespace blazorApp
             {
                 // By default, all incoming requests will be authorized according to the default policy
                 options.FallbackPolicy = options.DefaultPolicy;
-                // options.AddPolicy("ValidateAccessTokenPolicy", validateAccessTokenPolicy =>
-                //     {
-                //         // Validate ClientId from token
-                //         // only accept tokens issued ....
-                //         validateAccessTokenPolicy.RequireClaim("ReadAccess", "23d9a97d-3387-499c-83bc-0ae84d198403");
-                //     });
             });
 
             services.AddRazorPages();
