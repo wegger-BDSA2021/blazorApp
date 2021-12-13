@@ -59,13 +59,29 @@
             { 
                 var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 _request.UserId = userId.Trim(); 
-                _httpClient = HttpClientFactory.CreateClient();
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                System.Console.WriteLine(userId);
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                _httpClient = HttpClientFactory.CreateClient("httpClient");
 
-                var token = await TokenAcquisitionService.GetAccessTokenForUserAsync(new string[] {"ReadAccess"});
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                System.Console.WriteLine(_request.Title);
+                System.Console.WriteLine(_request.Description);
+                System.Console.WriteLine(_request.Url);
+                System.Console.WriteLine(_request.UserId);
+                System.Console.WriteLine(_request.InitialRating);
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                
+
+                var token = await TokenAcquisitionService.GetAccessTokenForUserAsync(new string[] {"api://23d9a97d-3387-499c-83bc-0ae84d198403/ReadAccess"});
                 _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                _response = await _httpClient.PostJsonAsync<ResourceResponseModel>("api/Resource/Create", _request);
+                _response = await _httpClient.PostJsonAsync<ResourceResponseModel>("/api/Resource/Create", _request);
                 System.Console.WriteLine(_response);
             }
             catch (Exception ex)

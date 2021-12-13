@@ -42,7 +42,7 @@ namespace blazorApp
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                         .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
-                        .AddDownstreamWebApi("WeggerApi", Configuration.GetSection("WeggerAuth"))
+                        .AddDownstreamWebApi("Wegger", Configuration.GetSection("WeggerAuth"))
                         .AddInMemoryTokenCaches();
 
 
@@ -75,9 +75,9 @@ namespace blazorApp
 
             services.AddSingleton<WeatherForecastService>();
 
-            services.AddHttpClient<IResourceService, ResourceService>(client =>
+            services.AddHttpClient("httpClient", client =>
             {
-                client.BaseAddress = new Uri("http://localhost:5000/");
+                client.BaseAddress = new Uri("https://localhost:5001/");
             }).ConfigureHttpMessageHandlerBuilder(builder =>
             {
                 builder.PrimaryHandler = new HttpClientHandler
