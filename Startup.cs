@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using blazorApp.Data;
 using Microsoft.Graph;
 using Services;
 using System.Net.Http;
@@ -58,7 +57,6 @@ namespace blazorApp
 
             services.AddAuthorization(options =>
             {
-                // By default, all incoming requests will be authorized according to the default policy
                 options.FallbackPolicy = options.DefaultPolicy;
             });
 
@@ -67,7 +65,6 @@ namespace blazorApp
             services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
 
-            services.AddSingleton<WeatherForecastService>();
 
             services.AddHttpClient("httpClient", client =>
             {
@@ -81,7 +78,6 @@ namespace blazorApp
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -91,7 +87,6 @@ namespace blazorApp
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
